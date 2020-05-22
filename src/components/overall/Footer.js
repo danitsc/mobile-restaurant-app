@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet, Text, View, SafeAreaView, Button } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
-import { Actions, Router, Scene } from 'react-native-router-flux'
+// import { Actions, Router, Scene } from 'react-native-router-flux'
 import Home from '../../screens/HomeScreen'
 import MenuScreen from '../../screens/MenuScreen'
 
@@ -21,12 +21,12 @@ const Footer = ({ navigation }) => {
 
 	return (
 		<View style={styles.Footer}>
-			<Router>
+			{/* <Router>
 				<Scene key='root'>
 					<Scene key='home' component={Home} title='Home' initial={true} />
 					<Scene key='about' component={MenuScreen} title='About' />
 				</Scene>
-			</Router>
+			</Router> */}
 			{/* <Icon
 				// onPress={() => navigation.navigate('Home')}
 				onPress={goToHome}

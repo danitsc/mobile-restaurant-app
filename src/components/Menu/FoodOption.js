@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react'
 import { StyleSheet, Text, View, Image, Dimensions, Button } from 'react-native'
 
-import { Context } from '../../context/cartContext'
+import { Context } from '../../context/dataContext'
 
 const deviceWidth = Dimensions.get('window').width
 
@@ -27,7 +27,7 @@ versions of Lorem Ipsum.`,
 		setMenuChosen(false)
 	}
 
-	const { state, ADD_OPTION } = useContext(Context)
+	// const { state, ADD_OPTION } = useContext(Context)
 
 	return (
 		<View style={styles.backgroundMenu}>

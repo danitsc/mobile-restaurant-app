@@ -51,7 +51,7 @@ const HomeScreenOptions = [
 const HomeScreen = () => {
 	return (
 		<View style={styles.backgroundHomeScreen}>
-			<Header />
+			{/* <Header />
 			<View style={styles.backgroundHomeScreen}>
 				<View style={styles.welcomeInfo}>
 					<Text>Welcome to Your Restaurant App</Text>
@@ -84,7 +84,7 @@ const HomeScreen = () => {
 						</View>
 					</View>
 				</View>
-			</View>
+			</View> */}
 			{/* <Footer navigation={navigation} /> */}
 		</View>
 		// <View>
