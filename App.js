@@ -1,37 +1,19 @@
-// import React from 'react'
-// import { StyleSheet, Text, View, SafeAreaView, Button } from 'react-native'
-// import AppNavigator from './src/utils/AppNavigator'
-// // import { NativeRouter, Route, Link } from 'react-router-native'
-// // import { Router, Scene } from 'react-native-router-flux'
-import { Provider } from './src/context/cartContext'
-
-import Header from './src/components/overall/Header'
-import HomeScreen from './src/screens/HomeScreen'
-// // import Home from './src/screens/Home'
-import LocationScreen from './src/screens/LocationScreen'
-import ReservationScreen from './src/screens/ReservationScreen'
-import MenuScreen from './src/screens/MenuScreen'
-import CheckoutScreen from './src/screens/CheckoutScreen'
-// const App = () => {
-// 	return (
-// 		<Provider>
-// 			<View style={{ flex: 1 }}>
-// 				{/* <Header /> */}
-// 				<AppNavigator />
-// 			</View>
-// 		</Provider>
-// 	)
-// }
-
-// // const styles = StyleSheet.create({})
-
-// export default App
-
-import React from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { createAppContainer } from 'react-navigation'
 import { createBottomTabNavigator } from 'react-navigation-tabs'
-import Icon from 'react-native-vector-icons/FontAwesome'
+import { AsyncStorage } from 'react-native'
+import {
+	FontAwesome as AwesomeIcon,
+	MaterialCommunityIcons as MaterialIcon,
+} from 'react-native-vector-icons'
+
+import { Provider, Context } from './src/context/dataContext'
+import HomeScreen from './src/screens/HomeScreen'
+import ProfileScreen from './src/screens/ProfileScreen'
+import Login from './src/screens/LoginScreen'
+
+import { create } from 'apisauce'
 
 const bottomTabNavigator = createBottomTabNavigator(
 	{
@@ -39,34 +21,18 @@ const bottomTabNavigator = createBottomTabNavigator(
 			screen: HomeScreen,
 			navigationOptions: {
 				tabBarIcon: ({ tintColor }) => (
-					<Icon name='home' size={25} color={tintColor} />
+					<AwesomeIcon name='home' size={25} color={tintColor} />
 				),
 			},
 		},
-		Search: {
-			screen: MenuScreen,
+		Profile: {
+			screen: ProfileScreen,
 			navigationOptions: {
 				tabBarIcon: ({ tintColor }) => (
-					<Icon name='Menu' size={25} color={tintColor} />
+					<MaterialIcon name='account' size={25} color={tintColor} />
 				),
 			},
 		},
-		Reservation: {
-			screen: ReservationScreen,
-			navigationOptions: {
-				tabBarIcon: ({ tintColor }) => (
-					<Icon name='reservation' size={25} color={tintColor} />
-				),
-			},
-		},
-		// LocationScreen: {
-		// 	screen: LocationScreen,
-		// 	navigationOptions: {
-		// 		tabBarIcon: ({ tintColor }) => (
-		// 			<Icon name='Location' size={25} color={tintColor} />
-		// 		),
-		// 	},
-		// },
 	},
 	{
 		initialRouteName: 'Home',
@@ -78,21 +44,35 @@ const bottomTabNavigator = createBottomTabNavigator(
 
 const AppContainer = createAppContainer(bottomTabNavigator)
 
-// const App = () => {
-// 	return (
-// <Provider>
-// <View style={{ flex: 1 }}>
-// <Header />
-// <AppContainer />
-// </View>
-// </Provider>
-// 	)
-// }
-
 const App = () => {
+	const [user, setUser] = useState({ isConnected: false, key: '' })
+	useEffect(() => {
+	    const checkUserStatus = async () => {
+			try {
+				const apiKey = await AsyncStorage.getItem('key')
+				if(apiKey) {
+					setUser({ isConnected: true, key: apiKey })
+				} else {
+					console.log(`No api key in storage...`)
+				}
+			} catch(e) {
+				console.log(`Error checking user status: ${e}`)
+			}
+		}
+		checkUserStatus()
+	}, [])
+
+	const connectUser = key => {
+		setUser({ isConnected: true, key })
+	}
+
 	return (
 		<Provider>
-			<AppContainer />
+			{user.isConnected ? (
+				<AppContainer />
+			) : (
+				<Login connectUser={connectUser} />
+			)}
 		</Provider>
 	)
 }
