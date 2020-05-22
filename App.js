@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, Dimensions } from 'react-native'
 import { createAppContainer } from 'react-navigation'
-import { createBottomTabNavigator } from 'react-navigation-tabs'
+import {
+	createBottomTabNavigator,
+	createStackNavigator,
+} from 'react-navigation-tabs'
+import { NavigationContainer } from '@react-navigation/native'
+
 import { AsyncStorage } from 'react-native'
 import {
 	FontAwesome as AwesomeIcon,
@@ -11,17 +16,28 @@ import {
 import { Provider, Context } from './src/context/dataContext'
 import HomeScreen from './src/screens/HomeScreen'
 import ProfileScreen from './src/screens/ProfileScreen'
+import OrdersScreen from './src/screens/Orders'
 import Login from './src/screens/LoginScreen'
 
 import { create } from 'apisauce'
 
+const deviceWidth = Dimensions.get('window').width
+
 const bottomTabNavigator = createBottomTabNavigator(
 	{
-		Home: {
+		Search: {
 			screen: HomeScreen,
 			navigationOptions: {
 				tabBarIcon: ({ tintColor }) => (
-					<AwesomeIcon name='home' size={25} color={tintColor} />
+					<AwesomeIcon name='home' size={20} color={tintColor} />
+				),
+			},
+		},
+		Orders: {
+			screen: OrdersScreen,
+			navigationOptions: {
+				tabBarIcon: ({ tintColor }) => (
+					<MaterialIcon name='account' size={20} color={tintColor} />
 				),
 			},
 		},
@@ -29,15 +45,22 @@ const bottomTabNavigator = createBottomTabNavigator(
 			screen: ProfileScreen,
 			navigationOptions: {
 				tabBarIcon: ({ tintColor }) => (
-					<MaterialIcon name='account' size={25} color={tintColor} />
+					<MaterialIcon name='account' size={20} color={tintColor} />
 				),
 			},
 		},
 	},
 	{
-		initialRouteName: 'Home',
+		initialRouteName: 'Search',
+		tabBarPosition: 'bottom',
 		tabBarOptions: {
-			activeTintColor: '#eb6e3d',
+			activeTintColor: 'red',
+			style: {
+				backgroundColor: '#fafafa',
+			},
+		},
+		defaultNavigationOptions: {
+			cardStyle: { backgroundColor: 'green' },
 		},
 	}
 )
@@ -46,16 +69,17 @@ const AppContainer = createAppContainer(bottomTabNavigator)
 
 const App = () => {
 	const [user, setUser] = useState({ isConnected: false, key: '' })
+
 	useEffect(() => {
-	    const checkUserStatus = async () => {
+		const checkUserStatus = async () => {
 			try {
 				const apiKey = await AsyncStorage.getItem('key')
-				if(apiKey) {
+				if (apiKey) {
 					setUser({ isConnected: true, key: apiKey })
 				} else {
 					console.log(`No api key in storage...`)
 				}
-			} catch(e) {
+			} catch (e) {
 				console.log(`Error checking user status: ${e}`)
 			}
 		}
@@ -67,16 +91,22 @@ const App = () => {
 	}
 
 	return (
-		<Provider>
-			{user.isConnected ? (
-				<AppContainer />
-			) : (
-				<Login connectUser={connectUser} />
-			)}
-		</Provider>
+		<View style={styles.homeBackground}>
+			<Provider>
+				{user.isConnected ? (
+					<AppContainer />
+				) : (
+					<Login connectUser={connectUser} />
+				)}
+			</Provider>
+		</View>
 	)
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+	homeBackground: {
+		flex: 1,
+	},
+})
 
 export default App
