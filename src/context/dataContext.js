@@ -1,30 +1,25 @@
-import React, { useReducer } from 'react'
 import createDataContext from './createDataContext'
 
 const dataReducer = (state, action) => {
-	console.log('dai aici?')
 	switch (action.type) {
-		case 'ADD_OPTION':
-			break
-		// const {
-		// 	payload: { title, price, quantity },
-		// } = action
-		// const optionIdx = state.findIndex(opt => opt.title === title)
-		// if (optionIdx !== -1) {
-		// 	const initialQuantity = state[optionIdx].quantity
-		// 	state[optionIdx] = {
-		// 		title,
-		// 		price,
-		// 		quantity: initialQuantity + quantity,
-		// 	}
-		// 	return [...state]
-		// }
-		// return [...state, { title, price, quantity }]
 		case 'ADD_AUTH_INFO':
 			const {
-				payload: { email, userId },
+				payload: { email, key },
 			} = action
-			return [...state, { user: { email, userId } }]
+			return { ...state, user: { email, key } }
+		case 'ADD_OPTION':
+			console.log('state before add option', state)
+			const {
+				payload: { title, price, quantity },
+			} = action
+			console.log('title', title, '--', 'price', price, '--', 'quantity', quantity)
+			const orders = state.order
+			if (orders) {
+				return { ...state, order: [...orders, { title, price, quantity }] }
+			}
+			return { ...state, order: [{ title, price, quantity }] }
+		default:
+			return state
 	}
 }
 
@@ -35,8 +30,14 @@ const ADD_OPTION = dispatch => {
 }
 
 const ADD_AUTH_INFO = dispatch => {
-	return (email, userId) => {
-		dispatch({ type: 'ADD_AUTH_INFO', payload: { email, userId } })
+	return (email, key) => {
+		dispatch({ type: 'ADD_AUTH_INFO', payload: { email, key } })
+	}
+}
+
+const ADD_SELECTED_RESTAURANT = dispatch => {
+	return name => {
+		dispatch({ type: 'ADD_SELECTED_RESTAURANT', payload: { name } })
 	}
 }
 
@@ -45,6 +46,7 @@ export const { Context, Provider } = createDataContext(
 	{
 		ADD_OPTION,
 		ADD_AUTH_INFO,
+		ADD_SELECTED_RESTAURANT,
 	},
-	[]
+	{}
 )
