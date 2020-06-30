@@ -17,12 +17,19 @@ import {
 
 import { AsyncStorage } from 'react-native'
 
+import { create } from 'apisauce'
+
 import { Context } from '../../context/dataContext'
+
+const api = create({
+	baseURL: 'http://192.168.100.2:5000',
+	headers: { Accept: 'application/json' },
+})
 
 const deviceWidth = Dimensions.get('window').width
 const deviceHeight = Dimensions.get('window').height
 
-const Login = ({ toggleLoginComponent, connectUser }) => {
+const Login = ({ toggleLoginComponent }) => {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [error, setError] = useState({ isError: false, reason: '' })
@@ -30,7 +37,6 @@ const Login = ({ toggleLoginComponent, connectUser }) => {
 	const { state, ADD_AUTH_INFO } = useContext(Context)
 
 	const handleSignIn = async event => {
-		console.log('bunununun, handlesignin')
 		try {
 			const user = await signInWithEmailAndPasswordHandler(
 				event,
@@ -40,14 +46,17 @@ const Login = ({ toggleLoginComponent, connectUser }) => {
 			if (!user.success) {
 				setError({ isError: true, reason: user.reason })
 			} else {
-				console.log('ajunge')
 				const { data } = user
 				const { xa: apiKey } = data
 				const decode = jwtDecode(apiKey)
 				const { user_id, email: decodedEmail } = decode
-				console.log(user_id, decodedEmail)
-				ADD_AUTH_INFO(decodedEmail, user_id)
-				connectUser(apiKey)
+				const { data: getUserInfo } = await api.get(
+					`/api/users/info/${email.toLowerCase()}`
+				)
+				if (getUserInfo.success) {
+					const { data: userData } = getUserInfo
+					ADD_AUTH_INFO(userData)
+				}
 				await AsyncStorage.setItem('key', apiKey)
 			}
 		} catch (e) {
@@ -79,9 +88,6 @@ const Login = ({ toggleLoginComponent, connectUser }) => {
 			{error.isError && (
 				<View style={styles.errorMessageView}>
 					<Text style={styles.errorMessageReason}>{error.reason}</Text>
-					<TouchableOpacity onPress={toggleLoginComponent}>
-						<Text style={styles.forgotMessage}>Forgot Password?</Text>
-					</TouchableOpacity>
 				</View>
 			)}
 			<View style={styles.loginView}>

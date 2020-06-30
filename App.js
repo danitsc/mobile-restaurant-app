@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View, Text, SafeAreaView } from 'react-native'
+import { StyleSheet, View, Text, SafeAreaView, StatusBar } from 'react-native'
 
 import { NativeRouter, Route, Link, Redirect } from 'react-router-native'
 
@@ -11,13 +11,21 @@ import Login from './src/screens/LoginScreen'
 import { Provider } from './src/context/dataContext'
 import AppContainer from './AppContainer'
 
+import { getStatusBarHeight } from 'react-native-status-bar-height'
+import { HeaderBackground } from 'react-navigation-stack'
+
+console.log(getStatusBarHeight())
+
 const App = () => {
 	return (
-		<SafeAreaView style={styles.homeBackground}>
-			<Provider>
-				<AppContainer />
-			</Provider>
-		</SafeAreaView>
+		<>
+			<SafeAreaView style={{ flex: 0, backgroundColor: 'black' }} />
+			<SafeAreaView style={styles.homeBackground}>
+				<Provider>
+					<AppContainer />
+				</Provider>
+			</SafeAreaView>
+		</>
 	)
 }
 

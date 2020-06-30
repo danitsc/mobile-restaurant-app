@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import {
 	StyleSheet,
 	Text,
@@ -9,10 +9,17 @@ import {
 	TouchableOpacity,
 	ImageBackground,
 	FlatList,
+	SafeAreaView,
 } from 'react-native'
 
 import CustomizeChoice from './CustomizeChoice'
 import { Context } from '../../context/dataContext'
+
+import { create } from 'apisauce'
+
+const api = create({
+	baseURL: 'http://192.168.100.2:5000',
+})
 
 const deviceWidth = Dimensions.get('window').width
 
@@ -186,23 +193,38 @@ const deTest = [
 	},
 ]
 
-const RestaurantMenu = ({ data, setShowRestaurantMenu }) => {
-	const { data: restaurantData, restaurantId } = data
-	const { menu } = restaurantData
-	const { state, ADD_OPTION } = useContext(Context)
+const RestaurantMenu = ({ restaurantId, match, restaurantName }) => {
+	const restaurantIdToUse = restaurantId || match.params.restaurantId
+	const [loading, setLoading] = useState(true)
+	// const [restaurantData, setRestaurantData] = useState({ menu: [] })
+	const [restaurantData, setRestaurantData] = useState([])
+	const [filteredOptions, setFilteredOptions] = useState({})
+
+	const { state, ADD_OPTION, CLEAR_OPTIONS } = useContext(Context)
 	const [showCustomizer, setShowCustomizer] = useState({
 		show: false,
 		name: '',
 	})
 
-	console.log(state)
-
-	// const optionIdx = restaurantData.menu.findIndex(
-	// 	option => option.category === category
-	// )
-	const requiredOption = restaurantData.menu[0]
-
-	const [filteredOptions, setFilteredOptions] = useState(requiredOption)
+	useEffect(() => {
+		const getRestaurantData = async () => {
+			console.log('am idd da?', restaurantIdToUse)
+			try {
+				const { data } = await api.get(`/api/restaurant/${restaurantIdToUse}`)
+				// if (data.success) {
+				// setShowRestaurantMenu({ show: true, data })
+				const { menu } = data
+				setRestaurantData(menu)
+				const [defaultOption] = menu
+				setFilteredOptions({ ...defaultOption })
+				setLoading(false)
+				// }
+			} catch (error) {
+				console.log(`Show restaurant menu error: ${error}`)
+			}
+		}
+		getRestaurantData()
+	}, [])
 
 	const customizeChoice = item => {
 		const { name } = item
@@ -213,155 +235,183 @@ const RestaurantMenu = ({ data, setShowRestaurantMenu }) => {
 	}
 
 	const filterOptions = category => {
-		const newFilteredOptions = restaurantData.menu.filter(
+		const newFilteredOptions = restaurantData.filter(
 			options => options.category === category
 		)
-		const optionIdx = restaurantData.menu.findIndex(
+		const optionIdx = restaurantData.findIndex(
 			option => option.category === category
 		)
-		const requiredOption = restaurantData.menu[optionIdx]
+		const requiredOption = restaurantData[optionIdx]
 
 		setFilteredOptions(requiredOption)
 	}
 
 	return (
-		<View style={{}}>
-			<View style={{}}>
-				<ImageBackground
-					style={{
-						height: 200,
-						width: deviceWidth,
-						opacity: 1,
-					}}
-					source={restaurantLogo}
-				>
-					<View
-						style={{
-							backgroundColor: 'rgba(255, 255, 255, .4)',
-							height: 200,
-						}}
-					>
-						<TouchableOpacity
-							onPress={() => setShowRestaurantMenu({ show: false, data: {} })}
+		<View style={{ flex: 1 }}>
+			{loading ? (
+				<View>
+					<Text>Se incarca</Text>
+				</View>
+			) : (
+				<SafeAreaView>
+					<View style={{ flex: 1 }}>
+						<View
 							style={{
-								color: 'red',
-								opacity: 0.9,
-								position: 'absolute',
-								left: 10,
-								right: 0,
-								bottom: 0,
-								top: 10,
-								backgroundColor: 'transparent',
-								fontSize: 3000,
-								zIndex: 50,
+								backgroundColor: 'rgba(255, 255, 255, .4)',
+								height: 200,
 							}}
 						>
-							<Text
+							<TouchableOpacity
+								onPress={() => setShowRestaurantMenu({ show: false, data: {} })}
 								style={{
-									color: 'black',
+									color: 'red',
 									opacity: 0.9,
 									position: 'absolute',
-									top: 0,
+									left: 10,
+									right: 0,
 									bottom: 0,
+									top: 10,
 									backgroundColor: 'transparent',
-									fontSize: 30,
+									fontSize: 3000,
+									zIndex: 50,
 								}}
 							>
-								{'<'}
-							</Text>
-						</TouchableOpacity>
-					</View>
-				</ImageBackground>
-			</View>
-			{filteredOptions.category && (
-				<View>
-					<View style={{ backgroundColor: '#fafafa' }}>
-						<Text style={{ textAlign: 'center', margin: 15 }}>AICI OFERTE</Text>
-					</View>
-					<View style={{}}>
-						<FlatList
-							data={menu}
-							renderItem={({ item }) => (
-								<View style={{ margin: 5 }}>
-									<TouchableOpacity
-										key={item.category}
-										// style={styles.selectRestaurant}
-										onPress={() => filterOptions(item.category)}
-									>
-										<Text
-											style={{
-												fontSize: 16,
-												padding: 8,
-												paddingLeft: 10,
-											}}
-										>
-											{item.category.toUpperCase()}
-										</Text>
-									</TouchableOpacity>
-								</View>
-							)}
-							keyExtractor={item => item.name}
-							horizontal={true}
-						/>
-					</View>
-					<View style={{}}>
-						<FlatList
-							data={filteredOptions.menuList}
-							renderItem={({ item }) => (
-								<TouchableOpacity
-									key={item.name}
-									onPress={() => customizeChoice(item)}
+								<Text
+									style={{
+										color: 'black',
+										opacity: 0.9,
+										position: 'absolute',
+										top: 0,
+										bottom: 0,
+										backgroundColor: 'transparent',
+										fontSize: 30,
+									}}
 								>
-									<View
-										style={{
-											// margin: 5,
-											borderBottomColor: '#d3d5db',
-											borderBottomWidth: 0.3,
-											paddingBottom: 3,
-											marginLeft: 15,
-											marginRight: 15,
-											flexDirection: 'row',
-											justifyContent: 'space-between',
-										}}
-									>
-										<View>
+									{'<'}
+								</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+					{/* {filteredOptions.category && ( */}
+					<View>
+						<View style={{ backgroundColor: '#fafafa' }}>
+							<Text style={{ textAlign: 'center', margin: 15 }}>OFERTE</Text>
+						</View>
+						<View style={{}}>
+							<FlatList
+								data={restaurantData}
+								renderItem={({ item }) => (
+									<View style={{ margin: 5 }}>
+										<TouchableOpacity
+											key={item.category}
+											// style={styles.selectRestaurant}
+											onPress={() => filterOptions(item.category)}
+										>
 											<Text
 												style={{
 													fontSize: 16,
-													paddingBottom: 5,
+													padding: 8,
+													paddingLeft: 10,
 												}}
 											>
-												{item.name.toUpperCase()}
+												{item.category.toUpperCase()}
 											</Text>
-											<Text
-												style={{
-													fontSize: 12,
-													// paddingLeft: 5,
-													// paddingTop: 2,
-												}}
-											>
-												{item.ingredients}
-											</Text>
-											<Text
-												style={{
-													fontSize: 12,
-													// paddingLeft: 5,
-													paddingTop: 4,
-												}}
-											>
-												{item.price} RON
-											</Text>
-										</View>
+										</TouchableOpacity>
 									</View>
-									{showCustomizer.show && showCustomizer.name === item.name ? (
-										<CustomizeChoice item={item} />
-									) : null}
-								</TouchableOpacity>
-							)}
-							keyExtractor={item => item.name}
-						/>
+								)}
+								keyExtractor={item => item.name}
+								horizontal={true}
+							/>
+						</View>
+						{filteredOptions && filteredOptions.menuList && (
+							<View style={{}}>
+								<FlatList
+									data={filteredOptions.menuList}
+									renderItem={({ item }) => (
+										<TouchableOpacity
+											key={item.name}
+											onPress={() => customizeChoice(item)}
+										>
+											<View
+												style={{
+													// margin: 5,
+													borderBottomColor: '#d3d5db',
+													borderBottomWidth: 0.3,
+													paddingBottom: 3,
+													marginLeft: 15,
+													marginRight: 15,
+													flexDirection: 'row',
+													justifyContent: 'space-between',
+												}}
+											>
+												<View>
+													<Text
+														style={{
+															fontSize: 16,
+															paddingBottom: 5,
+														}}
+													>
+														{item.name.toUpperCase()}
+													</Text>
+													<Text
+														style={{
+															fontSize: 12,
+															// paddingLeft: 5,
+															// paddingTop: 2,
+														}}
+													>
+														{item.ingredients}
+													</Text>
+													<Text
+														style={{
+															fontSize: 12,
+															// paddingLeft: 5,
+															paddingTop: 4,
+														}}
+													>
+														{item.price} RON
+													</Text>
+												</View>
+											</View>
+											<View style={styles.backgroundReservation}>
+												<View>
+													<View style={styles.addItemView}>
+														<TouchableOpacity
+															onPress={e => {
+																e.preventDefault()
+																ADD_OPTION(item.name, parseFloat(item.price), 1, restaurantIdToUse, restaurantName)
+																return
+															}}
+														>
+															<Text>ADD CHOICE</Text>
+															<Icon
+																size={18}
+																name='circle-with-plus'
+																style={styles.addItem}
+															/>
+														</TouchableOpacity>
+													</View>
+												</View>
+											</View>
+										</TouchableOpacity>
+									)}
+									keyExtractor={item => item.name}
+								/>
+							</View>
+						)}
+						<View
+							style={{
+								alignSelf: 'center',
+								marginTop: 50,
+								marginBottom: 20,
+							}}
+						>
+							<TouchableOpacity onPress={CLEAR_OPTIONS}>
+								<Text>SEND ORDER</Text>
+							</TouchableOpacity>
+						</View>
 					</View>
-				</View>
+				</SafeAreaView>
 			)}
 		</View>
 	)

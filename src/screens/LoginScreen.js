@@ -26,7 +26,7 @@ const deviceHeight = Dimensions.get('window').height
 
 const restaurantLogo = require('../../assets/homescreen/restaurantLogo_test_4.jpeg')
 
-const LoginScreen = ({ connectUser }) => {
+const LoginScreen = () => {
 	const [error, setError] = useState({ isError: false, reason: '' })
 	const [showRegister, setShowRegister] = useState(false)
 
@@ -40,11 +40,7 @@ const LoginScreen = ({ connectUser }) => {
 			{showRegister ? (
 				<Register toggleLoginComponent={toggleLoginComponent} />
 			) : (
-				<Login
-					connectUser={connectUser}
-					toggleLoginComponent={toggleLoginComponent}
-					error={error}
-				/>
+				<Login toggleLoginComponent={toggleLoginComponent} error={error} />
 			)}
 		</View>
 	)
@@ -57,6 +53,6 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		// backgroundColor: '#fff6f2',
 		backgroundColor: 'white',
-	}
+	},
 })
 export default LoginScreen

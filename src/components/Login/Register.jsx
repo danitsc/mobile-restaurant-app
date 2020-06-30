@@ -63,7 +63,7 @@ const Register = ({ toggleLoginComponent }) => {
 		try {
 			const createUser = await createUserWithEmailAndPasswordHandler(
 				event,
-				email,
+				email.toLowerCase(),
 				password
 			)
 			if (!createUser.success) {
@@ -73,7 +73,8 @@ const Register = ({ toggleLoginComponent }) => {
 					firstName,
 					lastName,
 					phoneNumber,
-					email,
+					email: email.toLowerCase(),
+					role: 'user'
 				})
 				if (addUserInES.success) {
 					const { message } = addUserInES
